@@ -1,0 +1,370 @@
+/* ========================================
+   Shared Frontend Refresh
+   Final polish shared by student, SSC, and
+   administrator workspaces. Kiosk and auth
+   retain their purpose-built layouts.
+   ======================================== */
+
+:is(.role-dashboard-page, .student-dashboard-page, .student-subpage-page) {
+  --workspace-content-max: 1440px;
+  --workspace-gutter: clamp(18px, 4.5vw, 72px);
+}
+
+/* Keep wide screens composed instead of stretching dashboard content forever. */
+:is(.role-main, .student-main) {
+  padding-inline: var(--workspace-gutter);
+}
+
+:is(.role-main, .student-main) > :not(.role-topbar, .student-topbar) {
+  width: min(100%, var(--workspace-content-max));
+  margin-inline: auto;
+}
+
+/* A quieter, more tactile surface language across every workspace. */
+:is(.role-card, .dashboard-card, .dash-panel, .activity-panel, .stat-card) {
+  box-shadow:
+    0 1px 2px rgba(15, 31, 23, .035),
+    0 10px 30px rgba(15, 31, 23, .045);
+}
+
+:is(.role-card, .dashboard-card, .dash-panel, .activity-panel) {
+  border-color: color-mix(in srgb, var(--color-border-default) 82%, var(--brand-200));
+}
+
+:is(.form-control, .form-select) {
+  min-height: 42px;
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--transition-fast) var(--ease),
+    box-shadow var(--transition-fast) var(--ease),
+    background-color var(--transition-fast) var(--ease);
+}
+
+:is(.form-control, .form-select):focus {
+  border-color: var(--brand-500);
+  box-shadow: var(--shadow-focus);
+}
+
+:is(.role-dashboard-page, .student-dashboard-page, .student-subpage-page) .btn {
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  font-weight: 650;
+  letter-spacing: .005em;
+  box-shadow: 0 1px 2px rgba(18, 28, 24, .04);
+}
+
+:is(.role-dashboard-page, .student-dashboard-page, .student-subpage-page) .btn-success {
+  border-color: var(--brand-700);
+  background: linear-gradient(135deg, var(--brand-600), var(--brand-700));
+  box-shadow: 0 6px 16px rgba(14, 159, 110, .16), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.role-dashboard-page, .student-dashboard-page, .student-subpage-page) .btn-success:hover {
+    border-color: var(--brand-700);
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    transform: translateY(-1px);
+    box-shadow: 0 9px 20px rgba(14, 159, 110, .22);
+  }
+}
+
+/* Make dense data areas easier to scan. */
+:is(.role-card, .dashboard-card) .table-responsive {
+  scrollbar-color: var(--brand-300) transparent;
+  scrollbar-width: thin;
+}
+
+:is(.role-card, .dashboard-card) .table > :not(caption) > * > * {
+  padding-block: .82rem;
+}
+
+:is(.role-card, .dashboard-card) .table thead th {
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 750;
+  letter-spacing: .065em;
+  text-transform: uppercase;
+}
+
+/* Small dashboard metadata needs a stronger light-theme tone than the
+   general-purpose muted token to remain legible at compact sizes. */
+:root:not([data-theme="dark"]) .dash-panel-header a { color: var(--brand-700); }
+
+/* This file used to re-declare --color-text-muted to #53675c on .dashboard-card
+   as a partial workaround for the base token sitting at 4.37:1. The base token is
+   now #65756c and clears AA on every surface it lands on (see
+   tools/contrast-check.js), so the override is gone — keeping it would give
+   dashboard cards darker metadata than the rest of the app. */
+:root:not([data-theme="dark"]) .dashboard-card :is(.section-kicker, .text-link) {
+  color: var(--brand-700);
+}
+
+:root:not([data-theme="dark"]) .calendar-cell.has-event:not(.today) {
+  color: #086243;
+}
+
+:root:not([data-theme="dark"]) .event-date-badge .ev-dow {
+  color: var(--brand-700);
+  font-weight: 700;
+}
+
+:root:not([data-theme="dark"]) :is(
+  .event-info small,
+  .event-time-badge,
+  .sanction-preview-info small,
+  .activity-text span,
+  .activity-time
+) {
+  color: #53675c;
+}
+
+:root:not([data-theme="dark"]) .sanction-severity-pill.warning { color: #795000; }
+:root:not([data-theme="dark"]) .sanction-severity-pill.probation { color: #a33d00; }
+
+[data-theme="dark"] .student-breadcrumb {
+  color: #9bb1a5;
+  opacity: 1;
+}
+
+[data-theme="dark"] .sanction-severity-pill.probation {
+  color: #ffc08a;
+  background: #3a2112;
+}
+
+/* The menu button is injected by ui.js only when an app shell exists. */
+.app-mobile-menu-toggle {
+  display: none;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.app-mobile-menu-toggle i {
+  font-size: 1.1rem;
+  transition: transform var(--transition-normal) var(--ease);
+}
+
+.app-mobile-menu-toggle[aria-expanded="true"] i { transform: rotate(90deg); }
+
+.app-drawer-close { display: none; }
+
+.app-nav-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  border: 0;
+  padding: 0;
+  background: rgba(4, 15, 10, .58);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease);
+}
+
+.app-nav-backdrop[hidden] { display: none; }
+
+@media (max-width: 650px) {
+  :is(.role-dashboard-page, .student-dashboard-page, .student-subpage-page) {
+    --workspace-gutter: 16px;
+  }
+
+  body.nav-drawer-open { overflow: hidden; }
+
+  :is(.role-shell, .student-shell, .app-shell) { display: block; }
+
+  /* Replace the tall, permanently expanded mobile navigation with a drawer. */
+  :is(.role-sidebar, .student-sidebar, .app-sidebar) {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1100;
+    width: min(84vw, 316px);
+    height: 100dvh;
+    min-height: 0;
+    padding: 24px 18px 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(-105%);
+    visibility: hidden;
+    box-shadow: 24px 0 64px rgba(4, 15, 10, .28);
+    transition:
+      transform var(--transition-slow) var(--ease),
+      visibility 0s linear var(--transition-slow);
+  }
+
+  :is(.role-sidebar, .student-sidebar, .app-sidebar).is-open {
+    transform: translateX(0);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  :is(.role-brand, .student-brand, .app-brand) {
+    padding: 0 12px 20px;
+  }
+
+  :is(.role-profile, .student-profile, .app-profile) {
+    padding: 16px 10px 20px;
+  }
+
+  :is(.role-nav, .student-nav, .app-nav) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  :is(.role-nav, .student-nav, .app-nav) a {
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: 11px 14px;
+    font-size: .8rem;
+  }
+
+  :is(.role-nav, .student-nav, .app-nav) a i {
+    display: inline-block;
+    width: 20px;
+    font-size: 1rem;
+  }
+
+  :is(.role-nav, .student-nav, .app-nav) a.active::before {
+    display: block;
+  }
+
+  :is(.role-sidebar-footer, .student-sidebar-footer, .app-sidebar-footer) {
+    display: grid;
+    padding-top: 16px;
+  }
+
+  .app-mobile-menu-toggle { display: inline-grid; }
+
+  .app-drawer-close {
+    display: inline-grid;
+    position: absolute;
+    top: 18px;
+    right: 16px;
+    z-index: 1;
+    width: 38px;
+    height: 38px;
+    border-color: rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, .07);
+    color: rgba(255, 255, 255, .82);
+  }
+
+  .app-drawer-close:hover,
+  .app-drawer-close:focus-visible {
+    border-color: rgba(255, 255, 255, .28);
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+  }
+
+  .app-nav-backdrop {
+    display: block;
+  }
+
+  .app-nav-backdrop.is-visible { opacity: 1; }
+
+  :is(.role-main, .student-main) {
+    padding-inline: var(--workspace-gutter);
+  }
+
+  :is(.role-topbar, .student-topbar, .app-topbar) {
+    gap: 10px;
+    height: 66px;
+    margin-inline: calc(var(--workspace-gutter) * -1);
+    padding-inline: var(--workspace-gutter);
+    border-bottom-color: color-mix(in srgb, var(--color-border-default) 84%, transparent);
+    box-shadow: 0 8px 24px rgba(15, 31, 23, .035);
+  }
+
+  :is(.role-topbar, .student-topbar, .app-topbar) > div:first-of-type {
+    min-width: 0;
+    margin-right: auto;
+    line-height: 1.25;
+  }
+
+  :is(.role-topbar, .student-topbar, .app-topbar) > div:first-of-type strong {
+    display: block;
+    overflow: hidden;
+    color: var(--color-text-heading);
+    font-size: .8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :is(.role-topbar, .student-topbar, .app-topbar) .student-breadcrumb {
+    display: none;
+  }
+
+  .topbar-actions { gap: 7px; }
+
+  .topbar-actions .icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .topbar-date { display: none; }
+
+  .user-dropdown-toggle {
+    width: 36px;
+    height: 36px;
+    padding: 2px;
+    justify-content: center;
+  }
+
+  .user-dropdown-toggle > i { display: none; }
+
+  .student-filter-bar {
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .student-filter-bar .form-select,
+  .student-filter-search {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .student-count-chip {
+    width: 100%;
+    margin: 2px 0 0;
+    text-align: right;
+  }
+
+  :is(.dashboard-intro, .subpage-intro, .role-intro) {
+    gap: 16px;
+    padding: 30px 0 22px;
+  }
+
+  :is(.dashboard-intro, .subpage-intro, .role-intro) h1 {
+    font-size: clamp(1.75rem, 9vw, 2.25rem);
+  }
+
+  .intro-copy {
+    margin-top: 9px;
+    font-size: .88rem;
+  }
+
+  :is(.role-card, .dashboard-card, .dash-panel, .activity-panel, .stat-card) {
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  :is(.role-topbar, .student-topbar, .app-topbar) {
+    gap: 8px;
+  }
+
+  :is(.dashboard-card, .biometric-table-card) {
+    padding-inline: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-mobile-menu-toggle i,
+  .app-nav-backdrop,
+  :is(.role-sidebar, .student-sidebar, .app-sidebar) {
+    transition: none;
+  }
+}

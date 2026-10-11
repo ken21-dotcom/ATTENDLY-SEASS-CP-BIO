@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Attendance | Attendance System</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+</head>
+<body class="student-subpage-page dashboard-hover-accent">
+  <div class="student-shell">
+    <aside class="student-sidebar">
+      <a class="student-brand" href="student-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <a class="student-profile" href="student-profile.html"><div class="profile-avatar">JS</div><div><strong id="studentName">Student</strong><small>Student</small></div><i class="bi bi-chevron-right"></i></a>
+      <nav class="student-nav" aria-label="Student navigation"><a href="student-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a><a class="active" href="student-attendance.html"><i class="bi bi-calendar-check"></i> My attendance</a><a href="student-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a></nav>
+      <div class="student-sidebar-footer"><button class="sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button></div>
+    </aside>
+    <main class="student-main">
+      <header class="student-topbar"><div><span class="student-breadcrumb">Workspace /</span><strong>My attendance</strong></div><div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button><button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button><span class="topbar-date" id="todayLabel"></span></div></header>
+      <section class="subpage-intro"><div><p class="section-kicker">Your records</p><h1>Attendance history</h1><p class="intro-copy">A clear record of every event attendance marked at the campus kiosk.</p></div></section>
+      <section class="dashboard-card records-card"><div class="card-heading"><div><h2>Attendance records</h2></div><span class="card-menu"><i class="bi bi-calendar2-check"></i></span></div><div class="table-responsive"><table class="table student-table"><thead><tr><th>Date</th><th>Event</th><th>Time</th><th>Status</th></tr></thead><tbody id="attendanceTableBody"></tbody></table></div><div id="emptyState" class="empty-records d-none">No attendance records yet.</div></section>
+    </main>
+  </div>
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/student.js"></script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+/* ════════════════════════════════════════════════════════════
+   STAT CARD — single shared summary-metric component.
+
+   Canonical design for every stat/summary card across the
+   ATTENDLY (SEASS) prototype (Student, SSC and Admin workspaces):
+   - --radius-card corners, shared with every other card family
+   - flat emerald top accent, hidden at rest and revealed on hover
+     (the reveal itself is asserted in dashboard-hover.css)
+   - subtle top-left gradient fill + slightly visible border
+   - heavy, tight-tracked value text
+   - optional thin proportional progress bar
+   - small muted footer caption (arrow ↗ when actionable)
+   - top-right icon: "…" overflow only where further actions exist,
+     otherwise a status icon that reflects the card's state.
+
+   Per-card values/labels/icons stay as page data — only the
+   container styling and spacing are unified here.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Grid wrapper ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+
+/* ── Card shell ── */
+.stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  padding: 18px 20px 16px;
+  overflow: hidden;
+  border: 1px solid rgba(130, 145, 136, .28);
+  border-radius: var(--radius-card);
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,251,250,.98));
+  box-shadow: var(--shadow-card), 0 1px 3px rgba(14, 159, 110, .04);
+  transition: box-shadow var(--transition-normal) var(--ease),
+              transform var(--transition-normal) var(--ease),
+              border-color var(--transition-normal) var(--ease);
+}
+
+/* Top accent bar — flat solid emerald hugging the card's corners. Hidden at
+   rest; dashboard-hover.css scales it in from centre on hover. Both sheets
+   now read the same --accent-bar-* tokens, so a card looks identical whether
+   or not the page carries the `dashboard-hover-accent` modifier. */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--accent-bar-height);
+  background: var(--accent-bar-fill);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  opacity: 0;
+  transform-origin: center;
+  transform: scaleX(var(--accent-bar-rest-scale));
+  transition: var(--accent-bar-transition);
+  z-index: 2;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-card:hover {
+    box-shadow: var(--shadow-card-hover), 0 1px 8px rgba(14, 159, 110, .10);
+    transform: translateY(-2px);
+    border-color: var(--brand-200);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card:hover {
+    transform: none;
+  }
+}
+
+/* ── Featured / primary variant (e.g. the attendance-rate card) ── */
+.stat-card--featured {
+  border-color: var(--brand-200);
+  box-shadow: var(--shadow-card), 0 1px 4px rgba(14, 159, 110, .08);
+  background: var(--color-bg-card);
+}
+
+/* ── Header row: label + top-right icon ── */
+.stat-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stat-label {
+  color: var(--color-text-muted);
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.stat-icon {
+  color: var(--color-text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: color var(--transition-fast) var(--ease),
+              transform var(--transition-fast) var(--ease-spring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stat-card:hover .stat-icon {
+    color: var(--brand-500);
+  }
+}
+
+/* ── Value — heavy weight, tight tracking, large, 100% solid text. ── */
+.stat-value {
+  position: relative;
+  z-index: 1;
+  margin: auto 0 0;
+  padding-top: 20px;
+  color: var(--color-text-heading);
+  font-size: clamp(2rem, 2.4vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Progress track / fill (only for percentage-ish metrics) ── */
+.stat-progress {
+  position: relative;
+  z-index: 1;
+  margin: 9px 0 0;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-input);
+  overflow: hidden;
+  box-shadow: var(--shadow-inset);
+}
+
+.stat-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand-400), var(--brand-500));
+  box-shadow: 0 0 10px rgba(79, 206, 159, .45);
+  transition: width 700ms var(--ease);
+}
+
+/* ── Footer caption — small muted text; ↑ arrow when actionable.
+   Lives in the value block's grid (below the progress bar), so it tucks
+   under the number instead of floating to the card's bottom edge. ── */
+.stat-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 10px 0 0;
+  color: var(--color-text-muted);
+  font-size: .7rem;
+  text-decoration: none;
+}
+
+.stat-foot i {
+  color: var(--brand-500);
+  font-size: .74rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.stat-foot:hover {
+    color: var(--brand-700);
+  }
+}
+
+/* ── Trend pill (dashboard deltas, rendered inside the footer) ── */
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  font-size: .64rem;
+  font-weight: 700;
+}
+
+.stat-trend.up { background: var(--color-bg-success-light); color: var(--color-text-success); }
+.stat-trend.down { background: var(--color-bg-danger-light); color: var(--color-text-danger); }
+.stat-trend.neutral { background: var(--color-bg-input); color: var(--color-text-muted); }
+.stat-trend i { font-size: .6rem; }
+.stat-trend[hidden] { display: none; }
+
+/* ── Dark theme ── */
+[data-theme="dark"] .stat-card {
+  border-color: #1d3529;
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .stat-card:hover { border-color: #2a4a3a; }
+
+[data-theme="dark"] .stat-card:hover {
+  box-shadow: var(--shadow-card-hover), 0 1px 8px rgba(79, 206, 159, .14);
+}
+
+[data-theme="dark"] .stat-card--featured {
+  border-color: #1f3d2e;
+  background: var(--color-bg-card);
+}
+
+[data-theme="dark"] .stat-value {
+  color: var(--color-text-heading);
+}
+
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .stat-foot { color: var(--color-text-muted); }
+
+[data-theme="dark"] .stat-progress { background: #15241c; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 650px) {
+  .stat-grid { grid-template-columns: 1fr; }
+}

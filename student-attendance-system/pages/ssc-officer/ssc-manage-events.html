@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Events | ATTENDLY</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+  <link href="../../css/ssc.css" rel="stylesheet">
+  <style>
+    .event-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .event-type-badge.minor { background: var(--color-bg-success-light); color: var(--color-text-success); }
+    .event-type-badge.major { background: var(--color-bg-warning-light); color: var(--color-text-warning); }
+    .mandatory-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: .62rem;
+      font-weight: 600;
+    }
+    .mandatory-badge.yes { background: var(--color-bg-danger-light); color: var(--color-text-danger); }
+    .mandatory-badge.no { background: var(--color-bg-input); color: var(--color-text-muted); }
+    .recurring-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: .62rem;
+      font-weight: 600;
+      background: #e8f0fe;
+      color: #1a73e8;
+    }
+    .recurring-options { display: none; }
+    .recurring-options.visible { display: block; }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .toggle-switch input { accent-color: var(--bs-primary); }
+    .toggle-switch label {
+      margin: 0;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      cursor: pointer;
+    }
+    .event-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  </style>
+</head>
+<body class="role-dashboard-page dashboard-hover-accent">
+  <div class="role-shell">
+    <aside class="role-sidebar">
+      <a class="role-brand" href="ssc-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <div class="role-profile">
+        <div class="role-avatar ssc-avatar">SSC</div>
+        <div><strong>SSC Officer</strong><small>Student Services Committee</small></div>
+      </div>
+      <nav class="role-nav" aria-label="SSC navigation">
+        <a href="ssc-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a href="ssc-manage-students.html"><i class="bi bi-people"></i> Students</a>
+        <a class="active" href="ssc-manage-events.html"><i class="bi bi-calendar-event"></i> Events</a>
+        <a href="ssc-manage-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a>
+        <a href="ssc-reports.html"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="../kiosk.html"><i class="bi bi-display"></i> Kiosk</a>
+      </nav>
+      <div class="role-sidebar-footer">
+        <button class="role-sidebar-action" type="button"><i class="bi bi-gear"></i> Settings</button>
+        <button class="role-sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button>
+      </div>
+    </aside>
+    <main class="role-main">
+      <header class="role-topbar">
+        <div><span class="student-breadcrumb">Workspace /</span><strong>Manage events</strong></div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
+          <button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button>
+          <span class="topbar-date">SSC Officer</span>
+        </div>
+      </header>
+      <section class="role-intro">
+        <div>
+          <p class="section-kicker">Event management</p>
+          <h1>Create and manage events.</h1>
+          <p class="intro-copy">Schedule events and mark them as mandatory or optional for attendance tracking.</p>
+        </div>
+      </section>
+      <section class="dashboard-card">
+        <div class="card-heading">
+          <div><p class="section-kicker" aria-hidden="true">Event list</p><h2>All events</h2></div>
+          <span class="card-menu"><button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addEventModal"><i class="bi bi-plus-circle"></i> Add event</button></span>
+        </div>
+        <div class="table-responsive">
+          <table class="table student-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="eventTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Add Event Modal -->
+      <div class="modal fade" id="addEventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Add Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <form id="addEventForm">
+                <div class="mb-3">
+                  <label for="eventName" class="form-label">Event Name</label>
+                  <input type="text" class="form-control" id="eventName" required>
+                </div>
+                <div class="mb-3">
+                  <label for="eventType" class="form-label">Event Type</label>
+                  <select id="eventType" class="form-select" required>
+                    <option value="minor">Minor — recurring/regular (e.g. flag ceremony, homeroom)</option>
+                    <option value="major">Major — one-off/high-importance (e.g. Foundation Day, Intramurals)</option>
+                  </select>
+                  <small class="text-muted" style="font-size:.7rem">Minor = optional, recurring. Major = mandatory, one-off.</small>
+                </div>
+                <div class="mb-3 recurring-options" id="recurringOptions">
+                  <label for="eventRecurringDay" class="form-label">Repeats every</label>
+                  <select id="eventRecurringDay" class="form-select">
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="eventDate" class="form-label">Date</label>
+                  <input type="date" class="form-control" id="eventDate" required>
+                </div>
+                <div class="mb-3">
+                  <label for="eventTime" class="form-label">Time</label>
+                  <input type="time" class="form-control" id="eventTime" required>
+                </div>
+                <div class="mb-3">
+                  <label for="eventLocation" class="form-label">Location</label>
+                  <input type="text" class="form-control" id="eventLocation" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Event Modal -->
+      <div class="modal fade" id="editEventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <form id="editEventForm">
+                <input type="hidden" id="editEventId">
+                <div class="mb-3">
+                  <label for="editEventName" class="form-label">Event Name</label>
+                  <input type="text" class="form-control" id="editEventName" required>
+                </div>
+                <div class="mb-3">
+                  <label for="editEventType" class="form-label">Event Type</label>
+                  <select id="editEventType" class="form-select" required>
+                    <option value="minor">Minor</option>
+                    <option value="major">Major</option>
+                  </select>
+                  <small class="text-muted" style="font-size:.7rem">Minor = optional. Major = mandatory.</small>
+                </div>
+                <div class="mb-3">
+                  <label for="editEventDate" class="form-label">Date</label>
+                  <input type="date" class="form-control" id="editEventDate" required>
+                </div>
+                <div class="mb-3">
+                  <label for="editEventTime" class="form-label">Time</label>
+                  <input type="time" class="form-control" id="editEventTime" required>
+                </div>
+                <div class="mb-3">
+                  <label for="editEventLocation" class="form-label">Location</label>
+                  <input type="text" class="form-control" id="editEventLocation" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/ssc.js"></script>
+  <script>
+    /* ── Event type → toggle recurring day picker ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      var typeSelect = document.getElementById('eventType');
+      var recurringOpts = document.getElementById('recurringOptions');
+      if (typeSelect && recurringOpts) {
+        typeSelect.addEventListener('change', function () {
+          recurringOpts.classList.toggle('visible', this.value === 'minor');
+        });
+        recurringOpts.classList.toggle('visible', typeSelect.value === 'minor');
+      }
+    });
+  </script>
+</body>
+</html>

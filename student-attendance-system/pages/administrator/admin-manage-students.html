@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Students | ATTENDLY</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+</head>
+<body class="role-dashboard-page dashboard-hover-accent">
+  <div class="role-shell">
+    <aside class="role-sidebar">
+      <a class="role-brand" href="admin-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <div class="role-profile">
+        <div class="role-avatar ssc-avatar">AD</div>
+        <div><strong>Administrator</strong><small>System Admin</small></div>
+      </div>
+      <nav class="role-nav" aria-label="Admin navigation">
+        <a href="admin-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a class="active" href="admin-manage-students.html"><i class="bi bi-people"></i> Students</a>
+        <a href="admin-manage-officers.html"><i class="bi bi-person-badge"></i> Officers</a>
+        <a href="admin-manage-biometric.html"><i class="bi bi-fingerprint"></i> Biometric registry</a>
+        <a href="admin-biometric-audit.html"><i class="bi bi-journal-text"></i> Enrollment audit</a>
+        <a href="admin-manage-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a>
+        <a href="admin-reports.html"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="admin-settings.html"><i class="bi bi-gear"></i> Settings</a>
+      </nav>
+      <div class="role-sidebar-footer"><button class="role-sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button></div>
+    </aside>
+    <main class="role-main">
+      <header class="role-topbar">
+        <div><span class="student-breadcrumb">Workspace /</span><strong>Manage students</strong></div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
+          <button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button>
+          <div class="user-dropdown-wrap" id="userDropdownWrap"><button class="user-dropdown-toggle" id="userDropdownToggle" type="button"><div class="user-dropdown-avatar">AD</div><span>Administrator</span><i class="bi bi-chevron-down"></i></button><div class="user-dropdown-menu" id="userDropdownMenu" role="menu"><div class="user-dropdown-header"><strong>Administrator</strong><small id="adminEmail">admin@example.com</small></div><button class="user-dropdown-item" role="menuitem" onclick="window.location.href='admin-settings.html'"><i class="bi bi-gear"></i> Settings</button><div class="user-dropdown-divider"></div><button class="user-dropdown-item logout" role="menuitem" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button></div></div>
+        </div>
+      </header>
+      <section class="role-intro"><div><p class="section-kicker">Student management</p><h1>Full student account control.</h1><p class="intro-copy">Create, edit, or deactivate student accounts. Add individually or bulk-import via CSV.</p></div></section>
+
+      <div class="role-card">
+        <div class="role-card-header">
+          <h3>All Students</h3>
+          <div>
+            <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#importCsvModal"><i class="bi bi-upload me-1"></i>CSV Import</button>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addStudentModal"><i class="bi bi-plus-circle me-1"></i>Add student</button>
+          </div>
+        </div>
+        <div class="student-filter-bar">
+          <select id="filterDepartment" class="form-select" aria-label="Filter by department"></select>
+          <select id="filterCourse" class="form-select" aria-label="Filter by course"></select>
+          <select id="filterYear" class="form-select" aria-label="Filter by year level"></select>
+          <div class="student-filter-search">
+            <i class="bi bi-search search-icon"></i>
+            <input id="studentSearch" class="form-control" type="search" placeholder="Search name, ID or email…" aria-label="Search students">
+          </div>
+          <span id="studentCount" class="student-count-chip"></span>
+        </div>
+        <div class="data-table-wrapper">
+          <table class="table mb-0">
+            <thead><tr><th>Name</th><th>Email</th><th>Year Level</th><th>Actions</th></tr></thead>
+            <tbody id="studentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal fade" id="addStudentModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Add Student</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form id="addStudentForm"><div class="modal-body"><div class="mb-3"><label class="form-label">Full Name</label><input type="text" class="form-control" id="studentName" required></div><div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="studentEmail" required></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label">Department</label><select id="studentDepartment" class="form-select"></select></div><div class="col-md-6 mb-3"><label class="form-label">Course</label><select id="studentCourse" class="form-select"></select></div></div><div class="mb-3"><label class="form-label">Year Level</label><select id="studentYear" class="form-select"></select></div><p class="text-muted small">Default password: <code>password123</code>.</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success">Add student</button></div></form></div></div></div>
+
+      <div class="modal fade" id="editStudentModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Edit Student</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editStudentId"><div class="mb-3"><label class="form-label">Full Name</label><input type="text" class="form-control" id="editStudentName" required></div><div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="editStudentEmail" required></div><div class="row"><div class="col-md-6 mb-3"><label class="form-label">Department</label><select id="editStudentDepartment" class="form-select"></select></div><div class="col-md-6 mb-3"><label class="form-label">Course</label><select id="editStudentCourse" class="form-select"></select></div></div><div class="mb-3"><label class="form-label">Year Level</label><select id="editStudentYear" class="form-select"></select></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-success" onclick="confirmEditStudent()">Save changes</button></div></div></div></div>
+
+      <div class="modal fade" id="importCsvModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Bulk import via CSV</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><form id="importCsvForm"><div class="modal-body"><p class="text-muted small mb-3">Upload a CSV with columns: <code>name,email</code> and optional <code>department,course,year</code>. The first row can be a header (it will be skipped).</p><input type="file" class="form-control" id="csvFileInput" accept=".csv" required></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success"><i class="bi bi-upload me-1"></i>Import</button></div></form></div></div></div>
+    </main>
+  </div>
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/administrator-panel.js"></script>
+</body>
+</html>

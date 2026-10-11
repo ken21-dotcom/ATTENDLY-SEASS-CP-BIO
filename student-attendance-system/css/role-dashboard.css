@@ -1,0 +1,492 @@
+/* ========================================
+   Role Dashboard — Admin & SSC Officer
+
+   Only what is UNIQUE to the role workspaces.
+
+   Everything the admin and SSC shells share with the student portal —
+   .role-shell, .role-sidebar, .role-brand, .role-profile, .role-nav,
+   .role-main, .role-topbar, .role-intro, .section-kicker, .intro-copy,
+   .global-search and both responsive breakpoints — lives in
+   app-shell.css and is NOT repeated here.
+
+   This sheet used to re-declare all seventeen of those selectors
+   verbatim. Because it loads after app-shell.css at equal specificity,
+   every edit to app-shell.css was silently overridden. Keep this file
+   to the role-specific surface: the entrance stagger, compliance
+   badges, the three card/panel families, their list rows, data tables
+   and card headers.
+   ======================================== */
+
+/* ── Section entrance animation ──
+   Staggers the four top-level content blocks. Previously targeted
+   `.role-main > section`, which only ever matched .role-intro — the
+   :nth-of-type(2)/(3) delays could not match anything, so the stat row
+   and panels below appeared with no transition at all. */
+.role-main > .role-intro,
+.role-main > .stat-grid,
+.role-main > .dash-panels,
+.role-main > .activity-feed {
+  animation: roleRise .22s var(--ease) both;
+}
+.role-main > .role-intro { animation-delay: .03s; }
+.role-main > .stat-grid { animation-delay: .07s; }
+.role-main > .dash-panels { animation-delay: .11s; }
+.role-main > .activity-feed { animation-delay: .15s; }
+
+@keyframes roleRise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-main > .role-intro,
+  .role-main > .stat-grid,
+  .role-main > .dash-panels,
+  .role-main > .activity-feed { animation: none; }
+}
+
+/* ── Compliance badges ── */
+.compliance-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 0 0;
+}
+
+.compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-success-light);
+  color: var(--color-text-success);
+  font-size: .65rem;
+  font-weight: 600;
+}
+
+.compliance-badge i { font-size: .7rem; }
+
+/* ════════════════════════════════════════════════════════════
+   TOP-ACCENT BAR — the three card families below share one
+   treatment, defined once by the --accent-bar-* tokens in
+   variables.css: flat solid emerald, hidden at rest, revealed on
+   hover by growing from centre, clipped into --radius-card corners.
+
+   dashboard-hover.css re-asserts the identical rule scoped to the
+   `dashboard-hover-accent` modifier. Both copies now agree; the flat
+   fill replaces the old --accent-glow gradient, which only reached
+   these three selectors on the pages lacking that modifier.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Shared dashboard card ──
+   NOTE: .role-action-card was removed from this group. No page uses it —
+   the action panels on the role dashboards are .role-card / .dash-panel. */
+.role-card {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card), 0 0 0 0.5px rgba(0,0,0,.02);
+  transition: box-shadow var(--transition-normal) var(--ease),
+              transform var(--transition-normal) var(--ease),
+              border-color var(--transition-normal) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--accent-bar-height);
+  background: var(--accent-bar-fill);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  opacity: 0;
+  transform-origin: center;
+  transform: scaleX(var(--accent-bar-rest-scale));
+  transition: var(--accent-bar-transition);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .role-card:hover {
+    box-shadow: var(--shadow-card-hover), 0 1px 8px rgba(14, 159, 110, .08);
+    transform: translateY(-2px);
+    border-color: var(--brand-200);
+  }
+  .role-card:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-card::before {
+    transition: none;
+  }
+
+  .role-card:hover {
+    transform: none;
+  }
+
+  .role-card:hover::before {
+    transform: none;
+  }
+}
+
+/* ── Stat cards & grids now live in css/stat-card.css (shared component).
+   .stat-trend likewise moved there — it was duplicated here with
+   different metrics (margin-top 8px vs 3px, weight 600 vs 700). ── */
+
+/* ── Dashboard panels (events / sanctions / activity) ── */
+.dash-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.dash-panel {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card), 0 0 0 0.5px rgba(0,0,0,.02);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal) var(--ease),
+              transform var(--transition-normal) var(--ease),
+              border-color var(--transition-normal) var(--ease);
+  position: relative;
+}
+
+.dash-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--accent-bar-height);
+  background: var(--accent-bar-fill);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  opacity: 0;
+  transform-origin: center;
+  transform: scaleX(var(--accent-bar-rest-scale));
+  transition: var(--accent-bar-transition);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dash-panel:hover {
+    box-shadow: var(--shadow-card-hover), 0 1px 8px rgba(14, 159, 110, .08);
+    transform: translateY(-2px);
+    border-color: var(--brand-200);
+  }
+  .dash-panel:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-panel::before,
+  .activity-panel::before {
+    transition: none;
+  }
+
+  .dash-panel:hover,
+  .activity-panel:hover {
+    transform: none;
+  }
+
+  .dash-panel:hover::before,
+  .activity-panel:hover::before {
+    transform: none;
+  }
+}
+
+.dash-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.dash-panel-header h3 {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--color-text-heading);
+}
+
+.dash-panel-header a {
+  font-size: .72rem;
+  color: var(--bs-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--transition-fast) var(--ease);
+}
+
+.dash-panel-header a:hover { color: var(--brand-700); text-decoration: underline; }
+
+.dash-panel-body { padding: 0; }
+
+/* ── Upcoming events list ── */
+.upcoming-event-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border-default);
+  transition: background var(--transition-fast) var(--ease),
+              transform var(--transition-fast) var(--ease);
+}
+
+.upcoming-event-item:last-child { border-bottom: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .upcoming-event-item:hover {
+    background: rgba(14,159,110,.06);
+    transform: translateX(3px);
+  }
+}
+
+.event-date-badge {
+  flex: 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-success-light);
+  color: var(--color-text-success);
+  line-height: 1.1;
+}
+
+.event-date-badge .ev-month { font-size: .55rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.event-date-badge .ev-day { font-size: 1.05rem; font-weight: 800; }
+.event-date-badge .ev-dow { font-size: .5rem; color: var(--color-text-muted); }
+
+.event-info { flex: 1; min-width: 0; }
+.event-info strong { display: block; font-size: .8rem; color: var(--color-text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-info small { color: var(--color-text-muted); font-size: .7rem; }
+
+.event-time-badge {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-input);
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Sanctions preview list ── */
+.sanction-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border-default);
+  transition: background var(--transition-fast) var(--ease),
+              transform var(--transition-fast) var(--ease);
+}
+
+.sanction-preview-item:last-child { border-bottom: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .sanction-preview-item:hover {
+    background: rgba(14,159,110,.06);
+    transform: translateX(3px);
+  }
+}
+
+.sanction-severity-icon {
+  flex: 0 0 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-circle);
+  font-size: .85rem;
+}
+
+.sanction-severity-icon.warning { background: var(--color-bg-warning-light); color: var(--color-text-warning); }
+.sanction-severity-icon.probation { background: var(--color-probation-bg); color: var(--color-text-probation); }
+.sanction-severity-icon.suspension { background: var(--color-bg-danger-light); color: var(--color-text-danger); }
+
+.sanction-preview-info { flex: 1; min-width: 0; }
+.sanction-preview-info strong { display: block; font-size: .8rem; color: var(--color-text-heading); }
+.sanction-preview-info small { color: var(--color-text-muted); font-size: .7rem; }
+
+.sanction-severity-pill {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.sanction-severity-pill.warning { background: var(--color-bg-warning-light); color: var(--color-text-warning); }
+.sanction-severity-pill.probation { background: var(--color-probation-bg); color: var(--color-text-probation); }
+.sanction-severity-pill.suspension { background: var(--color-bg-danger-light); color: var(--color-text-danger); }
+
+/* ── Recent Activity feed ── */
+.activity-feed { margin-top: 16px; }
+
+.activity-panel {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-card), 0 0 0 0.5px rgba(0,0,0,.02);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal) var(--ease),
+              transform var(--transition-normal) var(--ease),
+              border-color var(--transition-normal) var(--ease);
+  position: relative;
+}
+
+.activity-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--accent-bar-height);
+  background: var(--accent-bar-fill);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  opacity: 0;
+  transform-origin: center;
+  transform: scaleX(var(--accent-bar-rest-scale));
+  transition: var(--accent-bar-transition);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .activity-panel:hover {
+    box-shadow: var(--shadow-card-hover), 0 1px 8px rgba(14, 159, 110, .08);
+    transform: translateY(-2px);
+    border-color: var(--brand-200);
+  }
+  .activity-panel:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border-default);
+  transition: background var(--transition-fast) var(--ease),
+              transform var(--transition-fast) var(--ease);
+}
+
+.activity-item:last-child { border-bottom: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .activity-item:hover {
+    background: rgba(14,159,110,.06);
+    transform: translateX(3px);
+  }
+}
+
+/* ── Activity icon chips ──
+   All five are token-driven. .enrolled and .biometric were the only
+   off-brand raw hex in the app (Google blue #1a73e8 and purple
+   #8430ce) with no dark-theme override, which rendered near-white
+   chips on dark cards; the blue also measured 3.93:1, under the 4.5:1
+   AA floor for its 12px glyph. Now --color-bg-info-light /
+   --color-text-info and --color-bg-violet-light / --color-text-violet,
+   which adapt per theme and clear AA in both. */
+.activity-icon {
+  flex: 0 0 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-circle);
+  font-size: .75rem;
+}
+
+.activity-icon.check-in { background: var(--color-bg-success-light); color: var(--color-text-success); }
+.activity-icon.sanction { background: var(--color-bg-warning-light); color: var(--color-text-warning); }
+.activity-icon.enrolled { background: var(--color-bg-info-light); color: var(--color-text-info); }
+.activity-icon.biometric { background: var(--color-bg-violet-light); color: var(--color-text-violet); }
+.activity-icon.edited { background: var(--color-bg-input); color: var(--color-text-muted); }
+
+.activity-text { flex: 1; min-width: 0; }
+.activity-text strong { font-size: .78rem; color: var(--color-text-heading); }
+.activity-text span { font-size: .72rem; color: var(--color-text-muted); }
+
+.activity-time {
+  flex: 0 0 auto;
+  font-size: .65rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+/* ── Data table wrapper — prevents overflow ── */
+.data-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table-wrapper table {
+  min-width: 500px;
+  font-size: .82rem;
+}
+
+.data-table-wrapper table th,
+.data-table-wrapper table td {
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Card header for tables ── */
+.role-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border-default);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-card-header h3 {
+  margin: 0;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--color-text-heading);
+}
+
+/* ── Dark theme hover overrides ── */
+[data-theme="dark"] .upcoming-event-item:hover,
+[data-theme="dark"] .sanction-preview-item:hover,
+[data-theme="dark"] .activity-item:hover,
+[data-theme="dark"] .search-result-item:hover,
+[data-theme="dark"] .user-dropdown-item:hover {
+  background: rgba(79,206,159,.08);
+}
+
+/* ── Responsive ──
+   Sidebar, topbar, nav and intro breakpoints live in app-shell.css.
+   Only the role-specific blocks below are repeated here. */
+@media (max-width: 950px) {
+  .global-search { flex: 0 1 240px; }
+  .dash-panels { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+  .activity-item { padding: 10px 14px; }
+  .upcoming-event-item { padding: 10px 14px; }
+  .sanction-preview-item { padding: 10px 14px; }
+  .compliance-bar { padding: 8px 0 0; }
+}

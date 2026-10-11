@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biometric Registry | Attendance System</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+  <link href="../../css/ssc.css" rel="stylesheet">
+</head>
+<body class="role-dashboard-page dashboard-hover-accent">
+  <div class="role-shell">
+    <aside class="role-sidebar">
+      <a class="role-brand" href="ssc-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <div class="role-profile">
+        <div class="role-avatar ssc-avatar">SSC</div>
+        <div><strong>SSC Officer</strong><small>Student Services Committee</small></div>
+      </div>
+      <nav class="role-nav" aria-label="SSC navigation">
+        <a href="ssc-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a href="ssc-manage-students.html"><i class="bi bi-people"></i> Students</a>
+        <a class="active" href="ssc-manage-biometric.html"><i class="bi bi-fingerprint"></i> Biometric registry</a>
+        <a href="ssc-manage-events.html"><i class="bi bi-calendar-event"></i> Events</a>
+        <a href="ssc-manage-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a>
+        <a href="ssc-reports.html"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="../kiosk.html"><i class="bi bi-display"></i> Kiosk</a>
+      </nav>
+      <div class="role-sidebar-footer">
+        <button class="role-sidebar-action" type="button"><i class="bi bi-gear"></i> Settings</button>
+        <button class="role-sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button>
+      </div>
+    </aside>
+    <main class="role-main">
+      <header class="role-topbar">
+        <div><span class="student-breadcrumb">Workspace /</span><strong>Biometric registry</strong></div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
+          <button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button>
+          <span class="topbar-date">SSC Officer</span>
+        </div>
+      </header>
+      <section class="role-intro">
+        <div>
+          <p class="section-kicker">Hardware setup</p>
+          <h1>Register student biometrics.</h1>
+          <p class="intro-copy">Enroll each student once so the event kiosk can identify them during check-in.</p>
+        </div>
+      </section>
+      <section class="biometric-layout">
+        <article class="dashboard-card biometric-enroll-card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker" aria-hidden="true">Enrollment station</p>
+              <h2>New fingerprint registration</h2>
+            </div>
+            <i class="bi bi-fingerprint biometric-header-icon"></i>
+          </div>
+          <form id="biometricForm">
+            <div class="mb-4">
+              <label for="biometricStudent" class="form-label">Select student</label>
+              <select id="biometricStudent" class="form-select form-select-lg" required></select>
+            </div>
+            <div class="verification-checks">
+              <label><input id="identityVerified" type="checkbox" required> Student identity verified against school records</label>
+              <label><input id="consentCaptured" type="checkbox" required> Written biometric consent captured and stored</label>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="templateQuality" class="form-label">Template quality result</label>
+                <select id="templateQuality" class="form-select">
+                  <option value="excellent">Excellent</option>
+                  <option value="good" selected>Good</option>
+                  <option value="poor">Poor, request re-enrollment</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Enrollment device</label>
+                <input class="form-control" value="Enrollment Station 01" readonly>
+              </div>
+            </div>
+            <div class="reader-instruction"><i class="bi bi-usb-drive"></i><div><strong>Reader ready</strong><span>Connect the fingerprint reader, then place the student's finger on the sensor when prompted.</span></div></div>
+            <div id="biometricStatus" class="biometric-status" aria-live="polite">Ready to begin enrollment.</div>
+            <button id="biometricSubmit" class="btn btn-success" type="submit"><i class="bi bi-fingerprint me-2"></i>Start registration</button>
+          </form>
+        </article>
+        <aside class="dashboard-card biometric-guide">
+          <i class="bi bi-shield-lock guide-icon"></i>
+          <h2>Privacy first</h2>
+          <p>ATTENDLY stores a device template reference for the prototype. A production reader should keep biometric templates encrypted and never expose raw fingerprint images.</p>
+          <div class="biometric-flow"><span><b>1</b>Verify</span><span><b>2</b>Consent</span><span><b>3</b>Scan</span></div>
+        </aside>
+      </section>
+      <section class="dashboard-card biometric-table-card">
+        <div class="card-heading">
+          <div><p class="section-kicker" aria-hidden="true">Enrollment overview</p><h2>Registered students</h2></div>
+          <span class="card-menu"><i class="bi bi-list-check"></i></span>
+        </div>
+        <div class="table-responsive">
+          <table class="table student-table">
+            <thead><tr><th>Student</th><th>Student ID</th><th>Registered</th><th>Status</th></tr></thead>
+            <tbody id="biometricTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/ssc.js"></script>
+</body>
+</html>

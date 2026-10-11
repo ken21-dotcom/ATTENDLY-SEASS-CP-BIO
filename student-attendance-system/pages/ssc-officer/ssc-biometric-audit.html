@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biometric Audit | Attendance System</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+  <link href="../../css/ssc.css" rel="stylesheet">
+</head>
+<body class="role-dashboard-page dashboard-hover-accent">
+  <div class="role-shell">
+    <aside class="role-sidebar">
+      <a class="role-brand" href="ssc-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <div class="role-profile">
+        <div class="role-avatar ssc-avatar">SSC</div>
+        <div><strong>SSC Officer</strong><small>Student Services Committee</small></div>
+      </div>
+      <nav class="role-nav" aria-label="SSC navigation">
+        <a href="ssc-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a href="ssc-manage-students.html"><i class="bi bi-people"></i> Students</a>
+        <a class="active" href="ssc-biometric-audit.html"><i class="bi bi-journal-text"></i> Enrollment audit</a>
+        <a href="ssc-manage-events.html"><i class="bi bi-calendar-event"></i> Events</a>
+        <a href="ssc-manage-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a>
+        <a href="ssc-reports.html"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="../kiosk.html"><i class="bi bi-display"></i> Kiosk</a>
+      </nav>
+      <div class="role-sidebar-footer">
+        <button class="role-sidebar-action" type="button"><i class="bi bi-gear"></i> Settings</button>
+        <button class="role-sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button>
+      </div>
+    </aside>
+    <main class="role-main">
+      <header class="role-topbar">
+        <div><span class="student-breadcrumb">Workspace /</span><strong>Enrollment audit</strong></div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
+          <button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button>
+          <span class="topbar-date">SSC Officer</span>
+        </div>
+      </header>
+      <section class="role-intro">
+        <div>
+          <p class="section-kicker">Accountability</p>
+          <h1>Biometric enrollment audit.</h1>
+          <p class="intro-copy">Review who enrolled each student, when it happened, the device used, and the result.</p>
+        </div>
+      </section>
+      <section class="dashboard-card biometric-table-card">
+        <div class="card-heading">
+          <div><p class="section-kicker" aria-hidden="true">Immutable activity log</p><h2>Enrollment actions</h2></div>
+          <span class="card-menu"><i class="bi bi-journal-check"></i></span>
+        </div>
+        <div class="table-responsive">
+          <table class="table student-table">
+            <thead><tr><th>Date</th><th>Action</th><th>Student</th><th>Officer</th><th>Device</th><th>Quality</th><th>Result</th></tr></thead>
+            <tbody id="biometricAuditBody"></tbody>
+          </table>
+        </div>
+        <div id="auditEmpty" class="empty-records d-none">No biometric enrollment actions have been logged.</div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/ssc.js"></script>
+</body>
+</html>

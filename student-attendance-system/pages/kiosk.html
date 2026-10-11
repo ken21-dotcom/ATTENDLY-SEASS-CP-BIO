@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check-in Kiosk | ATTENDLY</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../css/styles.css" rel="stylesheet">
+  <link href="../css/dark-style.css" rel="stylesheet">
+</head>
+<body class="kiosk-page">
+  <a class="kiosk-skip-link" href="#kioskScanBtn">Skip to fingerprint scanner</a>
+
+  <header class="kiosk-topbar">
+    <div class="kiosk-topbar-inner">
+      <div class="kiosk-brand">
+        <span class="kiosk-brand-mark"><i class="bi bi-fingerprint"></i></span>
+        <span class="kiosk-brand-name">ATTENDLY<small>Campus event check-in</small></span>
+      </div>
+
+      <div class="kiosk-station-state" role="status">
+        <span class="kiosk-station-dot" aria-hidden="true"></span>
+        <span><strong>Station 01</strong><small>Reader online</small></span>
+      </div>
+
+      <div class="kiosk-topbar-right">
+        <div class="kiosk-clock">
+          <strong id="kioskClockTime">--:--</strong>
+          <span id="kioskClockDate"></span>
+        </div>
+        <button class="kiosk-theme-fab" data-theme-toggle aria-label="Toggle theme" type="button">
+          <i class="bi bi-moon" data-theme-icon></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="kiosk-stage">
+    <div class="kiosk-stage-inner">
+
+      <section class="kiosk-event-bar" aria-label="Active event">
+        <div class="kiosk-event-copy">
+          <span class="kiosk-event-icon"><i class="bi bi-calendar2-event"></i></span>
+          <div>
+            <span class="kiosk-event-label">Checking in for</span>
+            <p>Choose the active campus event for this station.</p>
+          </div>
+        </div>
+        <div class="kiosk-event-picker">
+          <label for="kioskEvent" class="visually-hidden">Select event</label>
+          <select id="kioskEvent" class="kiosk-event-select" aria-label="Select event"></select>
+          <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </div>
+      </section>
+
+      <div class="kiosk-workspace">
+        <section class="kiosk-scan" id="scanPanel" aria-labelledby="kioskEventName">
+          <div class="kiosk-card-vignette"></div>
+
+          <div class="kiosk-heading">
+            <div>
+              <span class="kiosk-kicker"><i class="bi bi-stars"></i> Fast biometric check-in</span>
+              <h1 class="kiosk-title" id="kioskEventName">Select an event to begin</h1>
+              <p class="kiosk-subtitle" id="kioskEventMeta"></p>
+            </div>
+            <span class="kiosk-status-badge" id="kioskStatusBadge">Upcoming</span>
+          </div>
+
+          <p class="kiosk-countdown" id="kioskCountdown" hidden aria-live="polite"></p>
+
+          <div class="kiosk-scan-layout">
+            <div class="kiosk-scanner" id="kioskScanner" data-state="idle">
+              <button class="kiosk-scan-button" id="kioskScanBtn" type="button" aria-describedby="kioskScanHint">
+                <span class="kiosk-scanner-ring" aria-hidden="true">
+                  <span class="kiosk-scanner-ring-ghost"></span>
+                  <span class="kiosk-scanner-ring-scanline"></span>
+                  <i class="bi bi-fingerprint kiosk-scanner-icon"></i>
+                </span>
+                <span class="kiosk-scan-cta">
+                  <strong>Touch to scan</strong>
+                  <small>Fingerprint reader ready</small>
+                </span>
+              </button>
+
+              <div class="kiosk-status-bar" id="kioskStatusBar" role="status" aria-live="polite">
+                <span class="kiosk-status-dot" aria-hidden="true"></span>
+                <div>
+                  <span class="kiosk-status-text" id="kioskStatusText">Waiting for scan</span>
+                  <span class="kiosk-status-hint" id="kioskScanHint">Place one finger flat on the reader.</span>
+                </div>
+              </div>
+            </div>
+
+            <ol class="kiosk-steps" aria-label="Check-in instructions">
+              <li><span>1</span><div><strong>Select your event</strong><small>Confirm the event shown above.</small></div></li>
+              <li class="is-current"><span>2</span><div><strong>Scan your finger</strong><small>Hold still while we verify your identity.</small></div></li>
+              <li><span>3</span><div><strong>Wait for confirmation</strong><small>A green screen means you are checked in.</small></div></li>
+            </ol>
+          </div>
+
+          <div class="kiosk-privacy-note">
+            <i class="bi bi-shield-check"></i>
+            <span><strong>Private by design.</strong> This station verifies your enrollment without displaying biometric data.</span>
+          </div>
+        </section>
+
+        <aside class="kiosk-rail" aria-label="Event activity">
+          <section class="kiosk-metrics-card">
+            <div class="kiosk-section-heading">
+              <div><span class="kiosk-section-kicker">Live event</span><h2>Attendance overview</h2></div>
+              <span class="kiosk-live-pulse"><i></i> Updating</span>
+            </div>
+            <div class="kiosk-counts">
+              <div class="kiosk-count">
+                <span class="kiosk-count-icon"><i class="bi bi-person-check"></i></span>
+                <span class="kiosk-count-num" id="kioskCount">0</span>
+                <span class="kiosk-count-label">Checked in</span>
+              </div>
+              <div class="kiosk-count">
+                <span class="kiosk-count-icon"><i class="bi bi-fingerprint"></i></span>
+                <span class="kiosk-count-num" id="kioskListCount">0</span>
+                <span class="kiosk-count-label">Enrolled</span>
+              </div>
+              <div class="kiosk-count kiosk-count-pct">
+                <span class="kiosk-count-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                <span class="kiosk-count-num" id="kioskAttendancePct">0%</span>
+                <span class="kiosk-count-label">Attendance</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="kiosk-ticker" id="kioskTicker" hidden>
+            <div class="kiosk-ticker-label"><span><i class="bi bi-clock-history"></i> Recent arrivals</span><small>Latest first</small></div>
+            <div class="kiosk-ticker-list" id="kioskTickerList"></div>
+          </section>
+
+          <section class="kiosk-manual" id="manualPanel">
+            <button class="kiosk-manual-toggle" id="manualToggle" aria-expanded="false" aria-controls="manualBody" type="button">
+              <span><i class="bi bi-keyboard"></i><span><strong>Manual fallback</strong><small>Use student ID or email</small></span></span>
+              <i class="bi bi-chevron-down kiosk-manual-chevron"></i>
+            </button>
+            <div class="kiosk-manual-body" id="manualBody" hidden>
+              <p class="kiosk-manual-note">Use only when the fingerprint reader is unavailable.</p>
+              <form id="kioskManualForm" class="kiosk-manual-form">
+                <label for="manualStudentId" class="visually-hidden">Student ID or email</label>
+                <input type="text" id="manualStudentId" class="kiosk-manual-input" placeholder="Student ID or email" autocomplete="off" inputmode="email">
+                <button type="submit" class="kiosk-manual-submit"><i class="bi bi-arrow-right"></i><span class="visually-hidden">Record attendance</span></button>
+              </form>
+            </div>
+          </section>
+
+          <div class="kiosk-help-card">
+            <span><i class="bi bi-headset"></i></span>
+            <div><strong>Need help?</strong><small>Ask the SSC officer assigned to this station.</small></div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="kiosk-result-overlay" id="resultOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle" aria-describedby="resultMessage" aria-live="assertive">
+        <div class="kiosk-result-card" id="resultCard">
+          <div class="kiosk-result-icon-wrap" id="resultIconWrap">
+            <i class="bi kiosk-result-icon" id="resultIcon"></i>
+          </div>
+          <h2 class="kiosk-result-title" id="resultTitle">Checked in</h2>
+          <p class="kiosk-result-message" id="resultMessage">You're all set.</p>
+          <p class="kiosk-result-meta" id="resultMeta">&nbsp;</p>
+          <button class="kiosk-result-done" id="resultDone" type="button"><i class="bi bi-check2-circle"></i> Done</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="kiosk-footer">
+    <div class="kiosk-footer-inner">
+      <span class="kiosk-footer-brand"><i class="bi bi-shield-lock"></i> Secure campus attendance</span>
+      <span class="kiosk-footer-note">J.H. Cerilles State College · Supreme Student Council</span>
+    </div>
+  </footer>
+
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 2000;"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/fingerprint-scanner.js"></script>
+  <script src="../js/kiosk.js"></script>
+</body>
+</html>

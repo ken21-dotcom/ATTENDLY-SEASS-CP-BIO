@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | ATTENDLY</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||'light'}catch(e){}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../css/styles.css" rel="stylesheet">
+  <link href="../../css/dark-style.css" rel="stylesheet">
+</head>
+<body class="role-dashboard-page">
+  <div class="role-shell">
+    <aside class="role-sidebar">
+      <a class="role-brand" href="admin-dashboard.html"><i class="bi bi-fingerprint"></i><span>ATTENDLY</span></a>
+      <div class="role-profile">
+        <div class="role-avatar ssc-avatar">AD</div>
+        <div><strong>Administrator</strong><small>System Admin</small></div>
+      </div>
+      <nav class="role-nav" aria-label="Admin navigation">
+        <a href="admin-dashboard.html"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+        <a href="admin-manage-students.html"><i class="bi bi-people"></i> Students</a>
+        <a href="admin-manage-officers.html"><i class="bi bi-person-badge"></i> Officers</a>
+        <a href="admin-manage-biometric.html"><i class="bi bi-fingerprint"></i> Biometric registry</a>
+        <a href="admin-biometric-audit.html"><i class="bi bi-journal-text"></i> Enrollment audit</a>
+        <a href="admin-manage-sanctions.html"><i class="bi bi-shield-exclamation"></i> Sanctions</a>
+        <a href="admin-reports.html"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a class="active" href="admin-settings.html"><i class="bi bi-gear"></i> Settings</a>
+      </nav>
+      <div class="role-sidebar-footer"><button class="role-sidebar-action logout-action" type="button" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button></div>
+    </aside>
+    <main class="role-main">
+      <header class="role-topbar">
+        <div><span class="student-breadcrumb">Workspace /</span><strong>Settings</strong></div>
+        <div class="topbar-actions"><button class="icon-button" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button><button class="icon-button" type="button" aria-label="Toggle theme" data-theme-toggle><i class="bi bi-moon" data-theme-icon></i></button><div class="user-dropdown-wrap" id="userDropdownWrap"><button class="user-dropdown-toggle" id="userDropdownToggle" type="button"><div class="user-dropdown-avatar">AD</div><span>Administrator</span><i class="bi bi-chevron-down" style="font-size:.6rem;color:var(--color-text-muted)"></i></button><div class="user-dropdown-menu" id="userDropdownMenu" role="menu"><div class="user-dropdown-header"><strong>Administrator</strong><small id="adminEmail">admin@example.com</small></div><button class="user-dropdown-item" role="menuitem" onclick="window.location.href='admin-settings.html'"><i class="bi bi-gear"></i> Settings</button><div class="user-dropdown-divider"></div><button class="user-dropdown-item logout" role="menuitem" onclick="logout()"><i class="bi bi-box-arrow-left"></i> Log out</button></div></div></div>
+      </header>
+      <section class="role-intro"><div><p class="section-kicker">Configuration</p><h1>System settings.</h1><p class="intro-copy">Configure sanction thresholds, semester dates, and kiosk stations.</p></div></section>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- Sanction policy thresholds -->
+        <div style="border:1px solid var(--color-border-default);border-radius:var(--radius-lg);background:var(--color-bg-card);box-shadow:var(--shadow-card);overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--color-border-default);"><h3 style="margin:0;font-size:.85rem;font-weight:700;color:var(--color-text-heading);"><i class="bi bi-shield-exclamation me-2" style="color:var(--color-badge-probation)"></i>Sanction tier thresholds</h3></div>
+          <div style="padding:20px;">
+            <p style="font-size:.78rem;color:var(--color-text-muted);margin-bottom:16px;">Number of unexcused absences that trigger each severity level.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <h4 style="font-size:.8rem;font-weight:700;margin-bottom:10px;color:var(--color-text-heading);">Minor events</h4>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Warning</label><input type="number" class="form-control form-control-sm" id="policyMinorWarning" min="1"></div>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Probation</label><input type="number" class="form-control form-control-sm" id="policyMinorProbation" min="1"></div>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Suspension</label><input type="number" class="form-control form-control-sm" id="policyMinorSuspension" min="1"></div>
+              </div>
+              <div>
+                <h4 style="font-size:.8rem;font-weight:700;margin-bottom:10px;color:var(--color-text-heading);">Major events</h4>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Warning</label><input type="number" class="form-control form-control-sm" id="policyMajorWarning" min="1"></div>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Probation</label><input type="number" class="form-control form-control-sm" id="policyMajorProbation" min="1"></div>
+                <div class="mb-2"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Suspension</label><input type="number" class="form-control form-control-sm" id="policyMajorSuspension" min="1"></div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-success mt-3" id="savePolicyBtn"><i class="bi bi-check-lg me-1"></i>Save policy</button>
+          </div>
+        </div>
+
+        <!-- Semester settings -->
+        <div style="border:1px solid var(--color-border-default);border-radius:var(--radius-lg);background:var(--color-bg-card);box-shadow:var(--shadow-card);overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--color-border-default);"><h3 style="margin:0;font-size:.85rem;font-weight:700;color:var(--color-text-heading);"><i class="bi bi-calendar3 me-2" style="color:var(--bs-primary)"></i>Semester settings</h3></div>
+          <div style="padding:20px;">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">School Year</label><input type="text" class="form-control form-control-sm" id="semesterName" placeholder="e.g. SY 2026–2027"></div>
+              <div class="col-md-6"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Term</label><input type="text" class="form-control form-control-sm" id="semesterTerm" placeholder="e.g. 1st Semester"></div>
+              <div class="col-md-6"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">Start date</label><input type="date" class="form-control form-control-sm" id="semesterStart"></div>
+              <div class="col-md-6"><label class="form-label" style="font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);">End date</label><input type="date" class="form-control form-control-sm" id="semesterEnd"></div>
+            </div>
+            <button class="btn btn-sm btn-success mt-3" id="saveSemesterBtn"><i class="bi bi-check-lg me-1"></i>Save semester</button>
+          </div>
+        </div>
+
+        <!-- Kiosk stations -->
+        <div style="border:1px solid var(--color-border-default);border-radius:var(--radius-lg);background:var(--color-bg-card);box-shadow:var(--shadow-card);overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--color-border-default);"><h3 style="margin:0;font-size:.85rem;font-weight:700;color:var(--color-text-heading);"><i class="bi bi-display me-2" style="color:var(--bs-primary)"></i>Kiosk stations</h3></div>
+          <div style="overflow-x:auto;"><table class="table mb-0" style="font-size:.82rem;"><thead><tr><th>Station name</th><th>Device</th><th>Location</th><th></th></tr></thead><tbody id="stationTableBody"></tbody></table></div>
+          <div style="padding:16px 20px;border-top:1px solid var(--color-border-default);">
+            <form id="addStationForm" style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+              <div style="flex:1;min-width:120px;"><label class="form-label" style="font-size:.68rem;text-transform:uppercase;color:var(--color-text-muted);">Name</label><input type="text" class="form-control form-control-sm" id="stationName" placeholder="e.g. Main Hall" required></div>
+              <div style="flex:1;min-width:120px;"><label class="form-label" style="font-size:.68rem;text-transform:uppercase;color:var(--color-text-muted);">Device</label><input type="text" class="form-control form-control-sm" id="stationDevice" placeholder="e.g. USB Scanner 01"></div>
+              <div style="flex:1;min-width:120px;"><label class="form-label" style="font-size:.68rem;text-transform:uppercase;color:var(--color-text-muted);">Location</label><input type="text" class="form-control form-control-sm" id="stationLocation" placeholder="e.g. Gymnasium"></div>
+              <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-plus-circle me-1"></i>Add</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/data.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/ui.js"></script>
+  <script src="../../js/administrator-panel.js"></script>
+</body>
+</html>
