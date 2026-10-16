@@ -1,10 +1,15 @@
 <?php
 /**
- * ATTENDLY — Route Table
+ * ATTENDLY — Route Table  (attendly_fresh schema)
  *
  * Maps method + path to a handler. Paths support ":param" segments and
  * are matched in declaration order, so literal paths must come before
  * parameterised ones.
+ *
+ * Routes and JSON shapes are identical to the previous backend so the
+ * existing frontend (js/api.js) works unchanged. New in this version:
+ *   POST /fingerprint/enroll   (admin) simulated or real enrollment
+ *   GET  /fingerprint/status   enrollment status for a student
  *
  * $ctx = ['repo' => Repository, 'auth' => Auth, 'method' => string, 'config' => array]
  */
@@ -30,10 +35,10 @@ function respond(array $route): void
  */
 function attendly_route(string $path, string $method, array $ctx): array
 {
-    $repo  = $ctx['repo'];
-    $auth  = $ctx['auth'];
+    $repo   = $ctx['repo'];
+    $auth   = $ctx['auth'];
     $config = $ctx['config'];
-    $match = null;
+    $match  = null;
 
     $routes = [
         // ── Health ──
@@ -106,9 +111,9 @@ function attendly_route(string $path, string $method, array $ctx): array
         // is intentionally readable without a session.
         ['GET', '/events', fn(): array => $repo->listEvents()],
         ['POST', '/events', function () use ($repo, $auth): array {
-            // events.created_by references ssc_officers(user_id), so an
+            // event.created_by references ssc_officer(officer_id), so an
             // administrator has no valid row to be recorded as the creator.
-            // Only approved officers can create events.
+            // Only officers can create events.
             $actor = $auth->requireRole(['ssc-officer']);
             $body  = Response::body();
             return $repo->createEvent([
@@ -129,14 +134,14 @@ function attendly_route(string $path, string $method, array $ctx): array
         ['PATCH', '/events/:id', function () use ($repo, $auth, &$match): array {
             $actor = $auth->requireRole(['ssc-officer']);
             $body = Response::body();
-            $repo->updateEvent(
+            return $repo->updateEvent(
                 Response::requireId($match, 'id'),
                 $body,
                 $actor
             );
         }],
 
-// ── Attendance ──
+        // ── Attendance ──
         ['GET', '/attendance', function () use ($repo, $auth, $config): array {
             // Students only ever see their own rows; staff see everything
             // or one event.
@@ -164,6 +169,32 @@ function attendly_route(string $path, string $method, array $ctx): array
             $studentId = $viewer['role'] === 'student' ? $viewer['id'] : query_id('student_id');
             $statusFilter = $_GET['status'] ?? null;
             return $repo->listSanctions($studentId, $statusFilter);
+        }],
+
+        // ── Fingerprint enrollment (new in attendly_fresh) ──
+        ['POST', '/fingerprint/enroll', function () use ($repo, $auth): array {
+            // Only administrators enroll fingerprints (enrolled_by and the
+            // log's administrator_id both reference administrator).
+            $admin = $auth->requireRole(['admin']);
+            $body  = Response::body();
+            return $repo->enrollFingerprint([
+                'studentId'       => Response::requireBodyId($body, 'studentId'),
+                'administratorId' => $admin['id'],
+                'templateData'    => $body['templateData'] ?? null,
+                // Pass "simulated": true while the AS608 sensor is not
+                // connected. The API writes action_type='simulated_enroll'
+                // (see Repository::enrollFingerprint and the prerequisite
+                // ALTER TABLE in sql/fresh_migration_fix.sql).
+                'simulated'       => !empty($body['simulated']),
+            ]);
+        }],
+        ['GET', '/fingerprint/status', function () use ($repo, $auth): array {
+            $viewer = $auth->requireRole(['admin', 'ssc-officer', 'student']);
+            $studentId = $viewer['role'] === 'student' ? $viewer['id'] : query_id('student_id');
+            if ($studentId === null) {
+                Response::fail('missing_student', 'Pass ?student_id=….', 422);
+            }
+            return $repo->getFingerprintStatus($studentId);
         }],
     ];
 

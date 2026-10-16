@@ -1,13 +1,31 @@
 <?php
 /**
- * ATTENDLY — Session Authentication
+ * ATTENDLY — Session Authentication  (attendly_fresh schema)
  *
- * Passwords are verified with password_verify() against the bcrypt hash
- * stored in users.password_hash. Plaintext is never logged, compared
- * outside this function, or returned to the client.
+ * Rewritten for the attendly_fresh database, which has NO unified `users`
+ * table. Credentials live in three role tables:
  *
- * The frontend's localStorage SHA-256 scheme is prototype-only; this is
- * the replacement path.
+ *   administrator  (admin_id,  full_name, email, password_hash)
+ *   ssc_officer    (officer_id, full_name, email, password_hash, account_status)
+ *   student        (student_id, full_name, email, password_hash, account_status)
+ *
+ * Login tries the tables in that order. The frontend keeps receiving the
+ * exact shape it already expects:
+ *   {id, name, email, role, username}   with role in {admin, ssc-officer, student}
+ *
+ * `username` is derived from the email local-part with the same rule as
+ * js/auth.js deriveUsername(), because attendly_fresh stores no username
+ * column anywhere.
+ *
+ * Sessions stay PHP-native (config/session.php), exactly like the previous
+ * backend. The attendly_fresh.auth_session table exists for a possible
+ * future DB-backed session implementation and is intentionally unused here.
+ *
+ * Status semantics per table:
+ *   administrator : no status column — always active
+ *   ssc_officer   : account_status Pending  -> 403 officer_pending
+ *                   account_status Inactive -> 403 account_inactive
+ *   student       : account_status Inactive -> 403 account_inactive
  */
 
 declare(strict_types=1);
@@ -20,6 +38,19 @@ require_once __DIR__ . '/../config/session.php';
 
 final class Auth
 {
+    /**
+     * Client role => [table, id column, DB role label].
+     * Table/column names are internal constants, never user input.
+     */
+    private const ROLE_TABLES = [
+        'admin'       => ['administrator', 'admin_id',   'Administrator'],
+        'ssc-officer' => ['ssc_officer',   'officer_id', 'SSC Officer'],
+        'student'     => ['student',       'student_id', 'Student'],
+    ];
+
+    /** Dummy bcrypt hash so a missing account costs the same time as a hit. */
+    private const DUMMY_HASH = '$2y$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidin';
+
     public function __construct(private PDO $db)
     {
     }
@@ -31,38 +62,24 @@ final class Auth
      */
     public function login(string $email, string $password): array
     {
-        $stmt = $this->db->prepare(
-            'SELECT id, role, username, email, password_hash, status FROM users WHERE email = :email LIMIT 1'
-        );
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch();
-
-        // Always run a verification so a missing account and a wrong
-        // password take the same amount of time.
-        $hash = $user['password_hash'] ?? '$2y$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidin';
-
-        if (!password_verify($password, $hash) || $user === false) {
-            Response::fail('invalid_credentials', 'Invalid email or password.', 401);
+        $row = $this->findIn('administrator', 'admin_id', $email);
+        if ($row !== null) {
+            return $this->finishLogin($row, 'admin', $password, 'active');
         }
 
-        if (($user['status'] ?? '') !== 'active') {
-            Response::fail('account_inactive', 'This account has been deactivated.', 403);
+        $row = $this->findIn('ssc_officer', 'officer_id', $email);
+        if ($row !== null) {
+            return $this->finishLogin($row, 'ssc-officer', $password, $this->normStatus($row['account_status'] ?? null));
         }
 
-        init_session();
-        regenerate_session();
-
-        // Officers stay out until an administrator approves them.
-        if ($user['role'] === 'ssc_officer' && !$this->officerApproved((int) $user['id'])) {
-            Response::fail('officer_pending', 'Your officer account is awaiting administrator approval.', 403);
+        $row = $this->findIn('student', 'student_id', $email);
+        if ($row !== null) {
+            return $this->finishLogin($row, 'student', $password, $this->normStatus($row['account_status'] ?? null));
         }
 
-        $safe = $this->safeUser($user);
-
-        $_SESSION['user_id'] = $safe['id'];
-        $_SESSION['role']    = $safe['role'];
-
-        return $safe;
+        // No account anywhere: still burn the same time as a real check.
+        password_verify($password, self::DUMMY_HASH);
+        Response::fail('invalid_credentials', 'Invalid email or password.', 401);
     }
 
     /**
@@ -80,24 +97,27 @@ final class Auth
     public function currentUser(): ?array
     {
         init_session();
-        $id = $_SESSION['user_id'] ?? null;
-        if ($id === null) {
+        $id   = $_SESSION['user_id'] ?? null;
+        $role = $_SESSION['role'] ?? null;
+        if ($id === null || !is_string($role) || !isset(self::ROLE_TABLES[$role])) {
             return null;
         }
 
-        $stmt = $this->db->prepare(
-            'SELECT id, role, username, email, status FROM users WHERE id = :id LIMIT 1'
-        );
-        $stmt->execute(['id' => (int) $id]);
-        $user = $stmt->fetch();
-        if ($user === false || $user['status'] !== 'active') {
-            // Stale session pointing at a deleted or disabled account.
+        [$table, $idCol] = self::ROLE_TABLES[$role];
+        $row = $this->findById($table, $idCol, (int) $id);
+        if ($row === null) {
+            // Stale session pointing at a deleted account.
             $this->logout();
             return null;
         }
 
-        $user['name'] = $this->displayName((int) $user['id'], $user['role'], $user['username']);
-        return $this->safeUser($user);
+        $status = $table === 'administrator' ? 'active' : $this->normStatus($row['account_status'] ?? null);
+        if ($status !== 'active') {
+            $this->logout();
+            return null;
+        }
+
+        return $this->safeUser($row, $role);
     }
 
     /**
@@ -115,7 +135,7 @@ final class Auth
     /**
      * Require one of the given roles, else fail with 403.
      *
-     * @param string[] $roles
+     * @param string[] $roles  client roles: admin, ssc-officer, student
      */
     public function requireRole(array $roles): array
     {
@@ -134,65 +154,118 @@ final class Auth
         if (strlen($next) < 8) {
             Response::fail('weak_password', 'New password must be at least 8 characters.', 422);
         }
+        if (!isset(self::ROLE_TABLES[$user['role']])) {
+            Response::fail('server_error', 'An unexpected error occurred.', 500);
+        }
+        [$table, $idCol] = self::ROLE_TABLES[$user['role']];
 
-        $stmt = $this->db->prepare('SELECT password_hash FROM users WHERE id = :id');
-        $stmt->execute(['id' => $user['id']]);
+        $stmt = $this->db->prepare("SELECT password_hash FROM {$table} WHERE {$idCol} = :id");
+        $stmt->execute(['id' => (int) $user['id']]);
         $hash = (string) $stmt->fetchColumn();
 
-        if (!password_verify($current, $hash)) {
+        if ($hash === '' || !password_verify($current, $hash)) {
             Response::fail('invalid_credentials', 'Current password is incorrect.', 401);
         }
 
-        $update = $this->db->prepare('UPDATE users SET password_hash = :hash WHERE id = :id');
+        $update = $this->db->prepare("UPDATE {$table} SET password_hash = :hash WHERE {$idCol} = :id");
         $update->execute([
             'hash' => password_hash($next, PASSWORD_DEFAULT),
-            'id'   => $user['id'],
+            'id'   => (int) $user['id'],
         ]);
     }
 
-    private function officerApproved(int $userId): bool
-    {
-        $stmt = $this->db->prepare(
-            'SELECT status FROM ssc_officers WHERE user_id = :uid LIMIT 1'
-        );
-        $stmt->execute(['uid' => $userId]);
-        return $stmt->fetchColumn() === 'approved';
-    }
-
     /**
-     * Best-effort human name; falls back to the username.
-     */
-    private function displayName(int $userId, string $role, string $username): string
-    {
-        if ($role !== 'student') {
-            return $username;
-        }
-        $stmt = $this->db->prepare(
-            'SELECT first_name, last_name FROM students WHERE user_id = :uid LIMIT 1'
-        );
-        $stmt->execute(['uid' => $userId]);
-        $row = $stmt->fetch();
-        if ($row === false) {
-            return $username;
-        }
-        return trim($row['first_name'] . ' ' . $row['last_name']) ?: $username;
-    }
-
-    /**
-     * Translate a database role into the vocabulary the frontend uses.
-     *
-     * The database stores 'administrator' and 'ssc_officer'; every page,
-     * requireAuth() guard, pageUrl() case and seeded localStorage record
-     * uses 'admin' and 'ssc-officer'. Role is compared after this mapping
-     * (see requireRole), so both sides must agree on these strings.
+     * Translate a database role label into the vocabulary the frontend uses.
      */
     public static function clientRole(string $dbRole): string
     {
         return match ($dbRole) {
-            'administrator' => 'admin',
-            'ssc_officer'  => 'ssc-officer',
-            default         => $dbRole,
+            'Administrator' => 'admin',
+            'SSC Officer'   => 'ssc-officer',
+            default         => 'student',
         };
+    }
+
+    // ── internals ────────────────────────────────────────────────
+
+    /**
+     * Find one row by email in a role table. Returns null when absent.
+     */
+    private function findIn(string $table, string $idCol, string $email): ?array
+    {
+        $extra = $table === 'administrator' ? '' : ', account_status';
+        $stmt  = $this->db->prepare(
+            "SELECT {$idCol} AS id, full_name, email, password_hash{$extra} FROM {$table} WHERE email = :email LIMIT 1"
+        );
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    /**
+     * Find one row by primary key in a role table. Returns null when absent.
+     */
+    private function findById(string $table, string $idCol, int $id): ?array
+    {
+        $extra = $table === 'administrator' ? '' : ', account_status';
+        $stmt  = $this->db->prepare(
+            "SELECT {$idCol} AS id, full_name, email, password_hash{$extra} FROM {$table} WHERE {$idCol} = :id LIMIT 1"
+        );
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    /**
+     * Complete a login once the candidate row is known.
+     */
+    private function finishLogin(array $row, string $clientRole, string $password, string $status): array
+    {
+        $hash = (string) ($row['password_hash'] ?? '');
+        // password_hash is NULLABLE in attendly_fresh (e.g. an officer row
+        // created before credentials were set) — NULL never authenticates,
+        // but still costs a verification so the timing stays flat.
+        if ($hash === '' || !password_verify($password, $hash)) {
+            Response::fail('invalid_credentials', 'Invalid email or password.', 401);
+        }
+
+        if ($status === 'pending') {
+            Response::fail('officer_pending', 'Your officer account is awaiting administrator approval.', 403);
+        }
+        if ($status !== 'active') {
+            Response::fail('account_inactive', 'This account has been deactivated.', 403);
+        }
+
+        init_session();
+        regenerate_session();
+
+        $safe = $this->safeUser($row, $clientRole);
+        $_SESSION['user_id'] = $safe['id'];
+        $_SESSION['role']    = $safe['role'];
+        return $safe;
+    }
+
+    /**
+     * Normalise a DB account_status to active|pending|inactive.
+     */
+    private function normStatus(?string $dbStatus): string
+    {
+        return match ($dbStatus) {
+            'Active'  => 'active',
+            'Pending' => 'pending',
+            default   => 'inactive',
+        };
+    }
+
+    /**
+     * Same rule as js/auth.js deriveUsername(): the schema stores no
+     * username column, so the client-facing username is derived.
+     */
+    public static function deriveUsername(string $email): string
+    {
+        $local   = strtolower(explode('@', $email)[0] ?? '');
+        $cleaned = substr((string) preg_replace('/[^a-z0-9_-]/', '', $local), 0, 50);
+        return $cleaned !== '' ? $cleaned : 'student';
     }
 
     /**
@@ -200,14 +273,15 @@ final class Auth
      *
      * @return array{id:int,name:string,email:string,role:string,username:string}
      */
-    private function safeUser(array $user): array
+    private function safeUser(array $row, string $clientRole): array
     {
+        $email = (string) $row['email'];
         return [
-            'id'       => (int) $user['id'],
-            'name'     => (string) ($user['name'] ?? $user['username']),
-            'email'    => (string) $user['email'],
-            'role'     => self::clientRole((string) $user['role']),
-            'username' => (string) $user['username'],
+            'id'       => (int) $row['id'],
+            'name'     => (string) $row['full_name'],
+            'email'    => $email,
+            'role'     => $clientRole,
+            'username' => self::deriveUsername($email),
         ];
     }
 }
